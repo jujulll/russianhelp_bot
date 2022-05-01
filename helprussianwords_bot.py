@@ -62,7 +62,7 @@ markup = ReplyKeyboardMarkup(reply_keyboard_start, one_time_keyboard=False)
 reply_keyboard_comm = [['/commands'], ['/new_word']]
 markup_comm = ReplyKeyboardMarkup(reply_keyboard_comm, one_time_keyboard=False)
 
-reply_keyboard_act = [['/check', '/meaning', '/history'], ['/fon', '/morf', '/end']]
+reply_keyboard_act = [['/check', '/meaning', '/morfem'], ['/fon', '/morfol', '/end']]
 markup_act = ReplyKeyboardMarkup(reply_keyboard_act, one_time_keyboard=False)
 
 word = ''
@@ -106,8 +106,8 @@ def help(update, context):
 def commands(update, context):
     update.message.reply_text("Вот список того, что я умею 😊:\n/new_word - начало работы с новым словом;\n"
                               "/check - проверка написания слова;\n/meaning - значение слова;\n"
-                              "/history - происхождение слова;\n/fon - фонетический разбор слова;\n"
-                              "/morf - морфологический разбор слова;\n/end - завершение работы.",
+                              "/morfem - морфемный разбор слова;\n/fon - фонетический разбор слова;\n"
+                              "/morfol - морфологический разбор слова;\n/end - завершение работы.",
                               reply_markup=markup_comm)
 
 
@@ -139,7 +139,7 @@ def meaning(update, context):
     update.message.reply_text(getwiki(word), reply_markup=markup_act)
 
 
-def history(update, context):
+def morfem(update, context):
     update.message.reply_text(
         "...",
         reply_markup=markup_act
@@ -159,7 +159,7 @@ def fon(update, context):
     update.message.reply_text(txt, reply_markup=markup_act)
 
 
-def morf(update, context):
+def morfol(update, context):
     global word
     txt_list = []
     morph = MorphAnalyzer().parse(word)
@@ -196,10 +196,10 @@ def main():
     dp.add_handler(CommandHandler("commands", commands))
     dp.add_handler(CommandHandler("new_word", begin))
     dp.add_handler(CommandHandler("check", check))
-    dp.add_handler(CommandHandler("history", history))
+    dp.add_handler(CommandHandler("morfem", morfem))
     dp.add_handler(CommandHandler("meaning", meaning))
     dp.add_handler(CommandHandler("fon", fon))
-    dp.add_handler(CommandHandler("morf", morf))
+    dp.add_handler(CommandHandler("morfol", morfol))
     dp.add_handler(CommandHandler("end", end))
 
     updater.start_polling()
