@@ -149,7 +149,7 @@ def history(update, context):
 def fon(update, context):
     global word
     try:
-        txt = f'Лови фонетический разбор слова {word}:' + requests.get(f"https://frazbor.ru/{word}").content.\
+        txt = f'Лови фонетический разбор слова {word}: ' + requests.get(f"https://frazbor.ru/{word}").content.\
             decode("utf-8").split('\n')[63].split('<span class="transcription">')[1].split('</span>')[0]
     except Exception:
         txts = ['Извините, я не могу сделать фонетический разбор этого слова. Попробуйте другое слово 🙁',
