@@ -5,7 +5,6 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 from random import randint
 import wikipedia, re, requests
 from pymorphy2 import MorphAnalyzer
-
 gram = {'POST': 'часть речи', 'NOUN': 'имя существительное', 'ADJF': 'имя прилагательное (полное)',
         'ADJS': 'имя прилагательное (краткое)', 'COMP': 'компаратив', 'VERB': 'глагол (личная форма)',
         'INFN': 'глагол (инфинитив)', 'PRTF': 'причастие (полное)', 'PRTS': 'причастие (краткое)',
@@ -140,10 +139,27 @@ def meaning(update, context):
 
 
 def morfem(update, context):
-    update.message.reply_text(
-        "...",
-        reply_markup=markup_act
-    )
+    global word
+    try:
+        response = requests.get(f'https://kartaslov.ru/разбор-слова-по-составу/{word}').content.decode('utf-8').\
+            split('        <table class="morphemics-table-v2">')
+        txts = []
+        for i in response[1].split('                                    </table>')[0].\
+                split('                                                                                '):
+            for j in i.split('\t'):
+                morfeme = j[:-32].split("<td class='td-morpheme-text'>")[1].\
+                    split("</td>\n                        <td class='td-morpheme-type'>")
+                if morfeme[1] == 'нулевое<br/>окончание':
+                    txts.append('окончание: нулевое')
+                else:
+                    txts.append(f'{morfeme[1]}: {morfeme[0]}')
+        txt = f'Лови морфемный разбор слова {word} 😊:\n' + ';\n'.join(txts)
+    except Exception:
+        txts = ['Извините, я не могу сделать морфемный разбор этого слова. Попробуйте другое слово 🙁',
+                'Вот незадача! В моих источниках морфемного разбора такого слова не найдено 😞',
+                'Мне очень жаль, но я не могу сделать морфемный разбор данного вами слова 🙁']
+        txt = txts[randint(0, 2)]
+    update.message.reply_text(txt, reply_markup=markup_act)
 
 
 def fon(update, context):
