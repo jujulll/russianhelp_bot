@@ -185,8 +185,10 @@ def morfem(update, context):
 def fon(update, context):
     word = get_word(update.message.from_user.id)
     try:
-        txt = f'Лови фонетический разбор слова {word}: ' + requests.get(f"https://frazbor.ru/{word}").content.\
-            decode("utf-8").split('\n')[63].split('<span class="transcription">')[1].split('</span>')[0]
+        txt = f'😊 Лови фонетический разбор слова {word}: ' + requests.get(f"https://frazbor.ru/{word}").content.\
+            decode("utf-8").split('\n')[63].split('<span class="transcription">')[1].split('</span></dd></dl>')[0]
+        while '<' in txt and '>' in txt:
+            txt = txt[:txt.index('<')] + txt[txt.index('>') + 1:]
     except Exception:
         txts = ['Извините, я не могу сделать фонетический разбор этого слова. Попробуйте другое слово 🙁',
                 'Вот незадача! Нет транскрипции не существующего в моем карманном словарике слова 😞',
