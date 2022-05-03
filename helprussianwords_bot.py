@@ -180,6 +180,8 @@ def morfem(update, context):
                     split("</td>\n                        <td class='td-morpheme-type'>")
                 if morfeme[1] == 'нулевое<br/>окончание':
                     txts.append('окончание: нулевое')
+                elif morfeme[1] == 'глагольное<br/>окончание':
+                	txts.append(f'глагольное окончание: {morfeme[0]}')
                 else:
                     txts.append(f'{morfeme[1]}: {morfeme[0]}')
         txt = f'Лови морфемный разбор слова {word} 😊:\n' + ';\n'.join(txts)
