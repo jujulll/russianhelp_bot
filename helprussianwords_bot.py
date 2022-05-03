@@ -80,7 +80,7 @@ markup_act = ReplyKeyboardMarkup(reply_keyboard_act, one_time_keyboard=False)
 reply_keyboard_answer = [['/1', '/2'], ['/3', '/4', '/5'], ['/back']]
 markup_answ = ReplyKeyboardMarkup(reply_keyboard_answer, one_time_keyboard=False)
 
-reply_keyboard_task = [['/task_4'], ['/task_5'], ['/task_6'], ['/task_7']]
+reply_keyboard_task = [['/task_4'], ['/task_5'], ['/task_6'], ['/task_7'], ['/end']
 markup_task = ReplyKeyboardMarkup(reply_keyboard_task, one_time_keyboard=False)
 c_a = ""
 
