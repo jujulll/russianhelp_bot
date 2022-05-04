@@ -55,8 +55,8 @@ gram = {'POST': 'часть речи', 'NOUN': 'имя существитель�
         'Adjx': 'может выступать в роли прилагательного', 'Ms-f': 'колебание по роду (м/ж/с)',
         'Hypo': 'гипотетическая форма слова'}
 gram_list = gram.keys()
-path_to_db = 'D:/pythonProject2/russian bot/words_of_users.sqlite'
-path_to_dir_of_mems = 'D:/pythonProject2/russian bot/mems'
+path_to_db = 'words_of_users.sqlite'
+path_to_dir_of_mems = 'mems'
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG
@@ -227,6 +227,8 @@ def morfem(update, context):
                     txts.append('окончание: нулевое')
                 elif morfeme[1] == 'глагольное<br/>окончание':
                 	txts.append(f'глагольное окончание: {morfeme[0]}')
+                elif morfeme[1] == 'соединительная<br/>гласная':
+                	txts.append(f'соединительная гласная: {morfeme[0]}')
                 else:
                     txts.append(f'{morfeme[1]}: {morfeme[0]}')
         txt = f'Лови морфемный разбор слова {word} 😊:\n' + ';\n'.join(txts)
