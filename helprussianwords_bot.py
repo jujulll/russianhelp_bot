@@ -14,7 +14,6 @@ from random import randint
 import wikipedia, re, requests, sqlite3
 from pymorphy2 import MorphAnalyzer
 import json
-import random
 
 gram = {'POST': 'часть речи', 'NOUN': 'имя существительное', 'ADJF': 'имя прилагательное (полное)',
         'ADJS': 'имя прилагательное (краткое)', 'COMP': 'компаратив', 'VERB': 'глагол (личная форма)',
@@ -120,7 +119,7 @@ def ege(update, context):
     global c_a
     w = update.message.text[-1]
     t = ''
-    r = random.randint(0, 5)
+    r = randint(0, 5)
     with open('questions.json', encoding='UTF-8') as file:
         data = json.load(file)
     for key, value in data.items():
@@ -138,7 +137,7 @@ def check_answer(update, context):
         a = "Ваш ответ верный!"
     else:
         a = "Неверно\n Правильный ответ:" + c_a[2:]
-    update.message.reply_text(a)
+    update.message.reply_text(a, reply_markup=markup_task)
 
 
 def getwiki(s):
