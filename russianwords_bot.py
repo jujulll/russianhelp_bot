@@ -8,7 +8,7 @@
 
 import logging
 
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import ReplyKeyboardMarkup
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 from random import randint
 import wikipedia, re, requests, sqlite3
@@ -93,7 +93,7 @@ def get_word(chat_id):
     con = sqlite3.connect(path_to_db)
     cur = con.cursor()
     if cur.execute(f'select word from words_of_users where from_user_id = {chat_id}').fetchall() == []:
-        cur.execute(f'insert into words_of_users(from_user_id,word) values({chat_id},"привет")')
+        cur.execute(f'insert into words_of_users(from_user_id,word,corr,incorr) values({chat_id},"привет",0,0)')
         con.commit()
         return 'привет'
     return cur.execute(f'select word from words_of_users where from_user_id = {chat_id}').fetchall()[0][0]
@@ -109,22 +109,37 @@ def send_word(chat_id, word):
     con.commit()
 
 
+def get_corr_and_incorr(chat_id):
+    con = sqlite3.connect(path_to_db)
+    cur = con.cursor()
+    if cur.execute(f'select corr, incorr from words_of_users where from_user_id = {chat_id}').fetchall() in \
+            ([(None, None)], []):
+        cur.execute(f'insert into words_of_users(from_user_id,word,corr,incorr) values({chat_id},"привет",0,0)')
+        con.commit()
+        return [0, 0]
+    return list(cur.execute(f'select corr,incorr from words_of_users where from_user_id = {chat_id}').fetchall()[0])
+
+
+def send_corr_and_incorr(chat_id, corr, incorr):
+    con = sqlite3.connect(path_to_db)
+    cur = con.cursor()
+    if cur.execute(f'select corr,incorr from words_of_users where from_user_id = {chat_id}').fetchall() == []:
+        cur.execute(f'insert into words_of_users(from_user_id,word,corr,incorr) values({chat_id},"привет",0,0)')
+    else:
+        cur.execute(f'update words_of_users set corr={corr}, incorr={incorr} where from_user_id={chat_id}')
+    con.commit()
+
+
 def test(update, context):
-    update.message.reply_text(
-        "Выберите номер задания:\n"
-        "4. Постановка ударения\n"
-        "5. Употребление паронимов\n"
-        "6. Лексические нормы\n"
-        "7. Морфологические нормы (образование форм слова)\n"
-        "9. Правописание корней\n"
-        "10. Правописание приставок\n"
-        "11. Правописание суффиксов (кроме -Н-/-НН-)\n\n"
-        "Чтобы выбрать номер задания, на клавиатуре используй команду /task_<номер_задания>. "
-        "Например, команда /task_5 - выбрать задание номер 5. Задания выпадают рандомно.\n"
-        "Чтобы ответить, используй команду /<номер_варианта_ответа>. "
-        "Например, команда /3 - выбрать вариант ответа номер 3.",
-        reply_markup=markup_task
-    )
+    update.message.reply_text("Выберите номер задания:\n4. Постановка ударения\n"
+                              "5. Употребление паронимов\n6. Лексические нормы\n"
+                              "7. Морфологические нормы (образование форм слова)\n"
+                              "9. Правописание корней\n10. Правописание приставок\n"
+                              "11. Правописание суффиксов (кроме -Н-/-НН-)\n\n"
+                              "Чтобы выбрать номер задания, на клавиатуре используй команду /task_<номер_задания>. "
+                              "Например, команда /task_5 - выбрать задание номер 5. Задания выпадают рандомно.\n"
+                              "Чтобы ответить, используй команду /<номер_варианта_ответа>. "
+                              "Например, команда /3 - выбрать вариант ответа номер 3.", reply_markup=markup_task)
 
 
 def ege(update, context):
@@ -135,7 +150,7 @@ def ege(update, context):
     else:
         w = update.message.text[-1]
     t = ''
-    r = randint(0, 5)
+    r = randint(0, 4)
     with open('questions.json', encoding='UTF-8') as file:
         data = json.load(file)
     for key, value in data.items():
@@ -147,29 +162,28 @@ def ege(update, context):
 
 
 def check_answer(update, context):
-    global corr
-    global incorr
+    corr, incorr = map(int, get_corr_and_incorr(update.message.from_user.id))
     m = "/" + c_a[0]
     a = ""
     if update.message.text in m:
         a = "Ваш ответ верный! Так держать 👍"
         corr += 1
-        incorr += 1
     else:
         a = "Неверно 🙁\nПравильный ответ: " + c_a
-        incorr += 1
+    incorr += 1
+    send_corr_and_incorr(update.message.from_user.id, corr, incorr)
     update.message.reply_text(a, reply_markup=markup_answ)
 
 
 def finish(update, context):
-    global corr
-    global incorr
+    corr, incorr = map(int, get_corr_and_incorr(update.message.from_user.id))
     update.message.reply_text(
         f'Вы ответили верно на {corr} из {incorr} 🙃',
         reply_markup=markup_comm
     )
     corr = 0
     incorr = 0
+    send_corr_and_incorr(update.message.from_user.id, corr, incorr)
 
 
 def getwiki(s):
@@ -258,9 +272,9 @@ def morfem(update, context):
                 if morfeme[1] == 'нулевое<br/>окончание':
                     txts.append('окончание: нулевое')
                 elif morfeme[1] == 'глагольное<br/>окончание':
-                	txts.append(f'глагольное окончание: {morfeme[0]}')
+                    txts.append(f'глагольное окончание: {morfeme[0]}')
                 elif morfeme[1] == 'соединительная<br/>гласная':
-                	txts.append(f'соединительная гласная: {morfeme[0]}')
+                    txts.append(f'соединительная гласная: {morfeme[0]}')
                 else:
                     txts.append(f'{morfeme[1]}: {morfeme[0]}')
         txt = f'Лови морфемный разбор слова {word} 😊:\n' + ';\n'.join(txts)
@@ -288,7 +302,7 @@ def fon(update, context):
 
 
 def morfol(update, context):
-    word = get_word(update.message.from_user.id)
+    word = str(get_word(update.message.from_user.id))
     txt_list = []
     morph = MorphAnalyzer().parse(word)
     for i in range(len(morph)):
